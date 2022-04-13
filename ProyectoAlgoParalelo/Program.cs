@@ -90,10 +90,18 @@ namespace ProyectoAlgoParalelo
         }
 
         #endregion
+        private static int getMemoryUsage()
+        {
+            // get the current process
+            var process = Process.GetCurrentProcess();
+            // get the memory allocated to the process
+            return (int)(process.PeakWorkingSet64 / 1024 / 1024);
+        }
 
         public static void Main(string[] args)
         {
-            Console.WriteLine("Iniciando Proceso".padString('-', Console.WindowWidth, true, true));
+            Console.WriteLine("Iniciando Proceso".padString('-', Console.WindowWidth-1, true, true));
+            Console.WriteLine("Memoria Inicial: " + getMemoryUsage() + " MB");
             Task<TestResult>[] tasks = new Task<TestResult>[5];
             tasks[0] = Task.Run(() => testSortAlgo("BubbleSort", Algoritmos.BubbleSort));
             tasks[1] = Task.Run(() => testSortAlgo("InsertionSort", Algoritmos.InsertionSort));
@@ -101,14 +109,13 @@ namespace ProyectoAlgoParalelo
             tasks[3] = Task.Run(() => testSearchAlgo("BinarySearch", Algoritmos.BinarySearch));
             tasks[4] = Task.Run(() => testSearchAlgo("SeqSearch", Algoritmos.SeqSearch));
 
-            Console.WriteLine("".padString('-', Console.WindowWidth, true));
             Console.WriteLine(
-                "Esperando a que se completen los algoritmos".padString('-', Console.WindowWidth, true, true));
+                "Esperando a que se completen los algoritmos".padString('-', Console.WindowWidth-1, true, true));
 
             Task.WhenAll(tasks).Wait();
 
             Console.WriteLine("Mostrando resultados".padString('-', Console.WindowWidth, true, true));
-            Console.WriteLine("".padString('-', Console.WindowWidth, true));
+            Console.WriteLine("Memoria Final: " + getMemoryUsage() + " MB");
 
             // print out the results in a table
             Utils.PrintTaskResult(tasks.Select(t => t.Result).ToArray());
@@ -311,9 +318,9 @@ namespace ProyectoAlgoParalelo
             // print the table header
             for (var i = 0; i < columns.Length; i++)
             {
-                Console.Write(" | " + columns[i].padString(' ', columnsLength[i], true, true));
+                Console.Write(" | " + columns[i].padString(' ', columnsLength[i], true, false));
             }
-
+            Console.WriteLine();
             Console.WriteLine("|".padString('-', totalLength, false, true));
             // print the table content, and pad the message string with spaces
             foreach (var row in data)
