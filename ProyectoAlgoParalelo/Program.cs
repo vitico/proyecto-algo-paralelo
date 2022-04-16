@@ -13,6 +13,7 @@ namespace ProyectoAlgoParalelo
         public string Name { get; set; }
         public int testNumber { get; set; }
         public TimeSpan Time { get; set; }
+        public TimeSpan TimePromedio { get; set; }
     }
 
     internal class Program
@@ -53,6 +54,7 @@ namespace ProyectoAlgoParalelo
                 Name = name,
                 Success = isSorted,
                 Time = timer.Elapsed,
+                TimePromedio = TimeSpan.FromMilliseconds(timer.Elapsed.TotalMilliseconds / numberOfTest),
                 testNumber = i
             };
         }
@@ -66,8 +68,8 @@ namespace ProyectoAlgoParalelo
             int i;
             var timer = new Stopwatch();
             timer.Start();
-            // get a number arround the middle of the array
-            var searchNumber = searchArray[searchArray.Length / 2 + numberOfSearch / 2];
+            // get a random number to search for
+            var searchNumber = searchArray[new Random().Next(0, searchArray.Length)];
 
 
             for (i = 0; i < numberOfSearch; i++)
@@ -85,22 +87,24 @@ namespace ProyectoAlgoParalelo
                 Success = isFound,
                 Name = name,
                 Time = timer.Elapsed,
+                TimePromedio = TimeSpan.FromMilliseconds(timer.Elapsed.TotalMilliseconds / numberOfTest),
                 testNumber = i
             };
         }
 
         #endregion
+
         private static int getMemoryUsage()
         {
             // get the current process
             var process = Process.GetCurrentProcess();
             // get the memory allocated to the process
-            return (int)(process.PeakWorkingSet64 / 1024 / 1024);
+            return (int) (process.PeakWorkingSet64 / 1024 / 1024);
         }
 
         public static void Main(string[] args)
         {
-            Console.WriteLine("Iniciando Proceso".padString('-', Console.WindowWidth-1, true, true));
+            Console.WriteLine("Iniciando Proceso".padString('-', Console.WindowWidth - 1, true, true));
             Console.WriteLine("Memoria Inicial: " + getMemoryUsage() + " MB");
             Task<TestResult>[] tasks = new Task<TestResult>[5];
             tasks[0] = Task.Run(() => testSortAlgo("BubbleSort", Algoritmos.BubbleSort));
@@ -110,7 +114,7 @@ namespace ProyectoAlgoParalelo
             tasks[4] = Task.Run(() => testSearchAlgo("SeqSearch", Algoritmos.SeqSearch));
 
             Console.WriteLine(
-                "Esperando a que se completen los algoritmos".padString('-', Console.WindowWidth-1, true, true));
+                "Esperando a que se completen los algoritmos".padString('-', Console.WindowWidth - 1, true, true));
 
             Task.WhenAll(tasks).Wait();
 
@@ -273,9 +277,9 @@ namespace ProyectoAlgoParalelo
         public static void PrintTaskResult(TestResult[] tasks)
         {
             printTable("Resultados", new[]
-                    {"Algoritmos", "se ha realizado correctamente?", "Tiempo (ms)", "Mensaje", "Pruebas realizadas"},
+                    {"Algoritmos", "Pruebas realizadas", "Tiempo (ms)", "Tiempo Promedio (ms)"},
                 tasks.Select(t => new[]
-                        {t.Name, t.Success.ToString(), t.Time.ToString(), t.Message, t.testNumber.ToString()})
+                        {t.Name, t.testNumber.ToString(), t.Time.ToString(), t.TimePromedio.TotalMilliseconds.ToString()})
                     .GetEnumerator());
         }
 
@@ -320,6 +324,7 @@ namespace ProyectoAlgoParalelo
             {
                 Console.Write(" | " + columns[i].padString(' ', columnsLength[i], true, false));
             }
+
             Console.WriteLine();
             Console.WriteLine("|".padString('-', totalLength, false, true));
             // print the table content, and pad the message string with spaces
